@@ -1,51 +1,53 @@
+import Control.Monad.State
 import System.Random
 import System.Console.Haskeline
 import Data.Char
 
 import BadIntel.BadIntel
+import BadIntel.Config.Config
+import BadIntel.Types.Common
+import BadIntel.Types.Agent
 import BadIntel.Types.Agency
+import BadIntel.Random.AgentsPool
 import BadIntel.Random.Names
 import BadIntel.Console.Display
+import BadIntel.Console.Menu
 
 main :: IO ()
-main = do g <- buildGame
+main = do c <- buildConfig
+          g <- buildGame c
           runInputT defaultSettings (loop g)
 
 loop :: BadIntel -> InputT IO ()
-loop g = do mapM_ outputStrLn menu
-            c <- pickNumber 1 4
-            (menu_functions !! (c-1)) g
+loop = enterMenu' menu menuFunctions
 
-buildGame :: IO BadIntel
-buildGame = do names <- getNames
-               return $ Game names ukAgency' ukAgency' []
+buildConfig :: IO Config
+buildConfig = do nUk <- getNames Uk
+                 nRu <- getNames Russia
+                 return $ Config nUk nRu
 
-pickNumber :: Int -> Int -> InputT IO Int
-pickNumber min max = do input <- getInputChar "> "
-                        case input of
-                            Nothing -> pickNumber min max
-                            Just x -> validOrLoop x
-    where 
-           validOrLoop x
-            | isDigit x = inMargin . digitToInt $ x
-            | otherwise = pickNumber min max
-           inMargin x
-            | x >= min && x <= max = return x
-            | otherwise = pickNumber min max
+buildGame :: Config -> IO BadIntel
+buildGame conf = do pool <- runStateT (buildPool 20 Uk) conf
+                    return $ Game ukAgency' ukAgency' (fst pool)
 
 menu :: [String]
-menu = ["1. See the agency organigram."
-       ,"2. Recruit agent."
-       ,"3. Manage agents."
-       ,"4. End turn."]
+menu = ["See the agency organigram."
+       ,"Recruit agent."
+       ,"Manage agents."
+       ,"End turn."]
 
-menu_functions :: [BadIntel -> InputT IO ()]
-menu_functions = [agency_org
-                 ,menu_recruitement
-                 ,menu_management
-                 ,end_turn]
+menuFunctions :: [BadIntel -> InputT IO ()]
+menuFunctions = [agency_org
+                ,menu_recruitement
+                ,menu_management
+                ,end_turn]
 
 agency_org = mapM_ outputStrLn . getAgencyLineUp . _organigram . _ukAgency
-menu_recruitement = undefined
+menu_recruitement :: BadIntel -> InputT IO ()
+menu_recruitement g = do let pool = currentRecruitementPool g
+                         c <- enterMenu . map _name $ pool
+                         mapM_ outputStrLn $ describe (pool !! (c-1))
+                         menu_recruitement g
+
 menu_management = undefined
-end_turn = undefined        
+end_turn = undefined

@@ -20,13 +20,17 @@ library
   hs-source-dirs:    lib
   exposed-modules:   BadIntel.Types.Agent
                      ,BadIntel.Types.Agency
+                     ,BadIntel.Config.Config
                      ,BadIntel.Random.Names
+                     ,BadIntel.Random.AgentsPool
                      ,BadIntel.BadIntel
                      ,BadIntel.Console.Display
+                     ,BadIntel.Types.Common
   build-depends:     base >= 4.7 && < 4.8
                      ,containers
                      ,MonadRandom
                      ,random-shuffle
+                     ,mtl
 
 executable badintel
   main-is:             BadIntel/Main.hs
@@ -34,6 +38,8 @@ executable badintel
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.7 && <4.8
+                      ,containers
+                      ,mtl
                       ,badintel
                       ,haskeline
                       ,random

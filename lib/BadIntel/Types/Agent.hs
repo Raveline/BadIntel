@@ -49,8 +49,8 @@ skillExtractions = [_collecting, _analyzing, _fighting
                    ,_convincing, _hiding, _loyalty]
 
 {-- Return a multiline descriptionf of an agent. --}
-describe :: Agent -> String
-describe a = unlines $ name:salary:skillStrings
+describe :: Agent -> [String]
+describe a = name:salary:skillStrings
     where name = "Agent " ++ _name a ++ ":"
           skillLevels = [f a | f <- skillExtractions]
           skillMarks = map showSkill skillLevels
