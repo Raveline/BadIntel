@@ -9,6 +9,7 @@ module BadIntel.Types.Agency
     ,getAvailableRanks 
     ,potentialAgents
     ,unassigned
+    ,organigram
     ,ukAgency')
 where
 
