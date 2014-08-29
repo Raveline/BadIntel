@@ -21,6 +21,7 @@ library
   exposed-modules:   BadIntel.Types.Agent
                      ,BadIntel.Types.Agency
                      ,BadIntel.Config.Config
+                     ,BadIntel.Game.Mechanism
                      ,BadIntel.Random.Names
                      ,BadIntel.Random.AgentsPool
                      ,BadIntel.BadIntel
@@ -30,6 +31,8 @@ library
                      ,containers
                      ,MonadRandom
                      ,random-shuffle
+                     ,free
+                     ,lens
                      ,mtl
 
 executable badintel
@@ -43,6 +46,16 @@ executable badintel
                       ,badintel
                       ,haskeline
                       ,random
+                      ,lens
   -- hs-source-dirs:      
   default-language:    Haskell2010
   
+test-suite Tests
+    hs-source-dirs:     testsuite
+    type:               exitcode-stdio-1.0
+    main-is:            Spec.hs
+    build-depends:      base >= 4.7 && <4.8
+                       ,hspec
+                       ,lens
+                       ,badintel
+                       ,mtl
