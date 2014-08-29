@@ -19,8 +19,9 @@ main :: IO ()
 main = do c <- buildConfig
           g <- buildGame c
           runInputT defaultSettings (loop g)
+          return ()
 
-loop :: BadIntel -> InputT IO ()
+loop :: BadIntel -> InputT IO BadIntel
 loop = enterMenu' menu menuFunctions
 
 buildConfig :: IO Config
@@ -39,28 +40,32 @@ menu = ["See the agency organigram."
        ,"Manage agents."
        ,"End turn."]
 
-menuFunctions :: [BadIntel -> InputT IO ()]
+menuFunctions :: [BadIntel -> InputT IO BadIntel]
 menuFunctions = [agency_org
                 ,menu_recruitement
                 ,menu_management
                 ,end_turn]
 
-agency_org = mapM_ outputStrLn . getAgencyLineUp . _organigram . _ukAgency
-menu_recruitement :: BadIntel -> InputT IO ()
+agency_org :: BadIntel -> InputT IO BadIntel
+agency_org g = do mapM_ outputStrLn . getAgencyLineUp $ (g^.(ukAgency . organigram))
+                  return g
+
+menu_recruitement :: BadIntel -> InputT IO BadIntel
 menu_recruitement g = do let pool = currentRecruitementPool g
                          c <- enterMenu . map agentLine $ pool
-                         if c == 0 then return ()
-                                   else displayAgent (currentRecruitementPool g !! c)
+                         if c == 0 then return g
+                                   else displayAgent (currentRecruitementPool g !! (c-1))
     where 
           agentLine a = _name a ++ " (" ++ showSkill (averageLevel a) ++ ")"
+          displayAgent :: Agent -> InputT IO BadIntel
           displayAgent a = mapM_ outputStrLn (describe a)
                            >> recruitOrNot g a
-                           >> menu_recruitement g
-          recruitOrNot :: BadIntel -> Agent -> InputT IO ()
-          recruitOrNot g a = yesNo "Do you want to recruit this potential agent (y/N) ?" (recruitment a g)
+                           >>= menu_recruitement
+          recruitOrNot :: BadIntel -> Agent -> InputT IO BadIntel
+          recruitOrNot g a = yesNo "Do you want to recruit this potential agent (y/N) ?" (recruitment a) g
 
-recruitment :: Agent -> BadIntel -> InputT IO ()
-recruitment a = return . fst . runState (process (recruit a)) 
+recruitment :: Agent -> BadIntel -> InputT IO BadIntel
+recruitment a = return . snd . runState (process (recruit a)) 
 
 menu_management = undefined
 end_turn = undefined

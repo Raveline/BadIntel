@@ -18,13 +18,13 @@ enterMenu c = do displayMenu c
                     Just x -> return x
                     Nothing -> enterMenu c
 
-enterMenu' :: [String] -> [a -> InputT IO ()] -> a -> InputT IO ()
+enterMenu' :: [String] -> [a -> InputT IO a] -> a -> InputT IO a
 enterMenu' m fs o = do c <- enterMenu m
-                       if c == 0 then return ()
+                       if c == 0 then return o
                                  else case Map.lookup c (toMenuIndex fs) of
                                     Nothing -> error "Menu does not contain this index."
                                     Just f -> f o
-                                              >> enterMenu' m fs o
+                                              >>= enterMenu' m fs
 
 displayMenu :: [String] -> InputT IO ()
 displayMenu = mapM_ outputStrLn . toMenu
@@ -47,10 +47,10 @@ pickNumber min max c = do c' <- tryToInt c
             | x >= min && x <= max = Just x
             | otherwise = Nothing
 
-yesNo :: String -> (InputT IO ()) -> InputT IO ()
-yesNo s f = do outputStrLn s
-               c <- getInputChar "> "
-               case c of
-                 Just x -> if x == 'y' then f
-                                       else return ()
-                 Nothing -> yesNo s f
+yesNo :: String -> (a -> InputT IO a) -> a -> InputT IO a
+yesNo s f a = do outputStrLn s
+                 c <- getInputChar "> "
+                 case c of
+                    Just x -> if x == 'y' then f a
+                                          else return a
+                    Nothing -> yesNo s f a
