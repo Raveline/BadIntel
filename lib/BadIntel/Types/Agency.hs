@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module BadIntel.Types.Agency 
 ( 
     Organigram
@@ -6,14 +7,15 @@ module BadIntel.Types.Agency
     ,Agency (..)
     ,buildOrganigram
     ,getAvailableRanks 
+    ,potentialAgents
+    ,unassigned
     ,ukAgency')
 where
 
 import Data.Tree
+import Control.Lens
 
 import BadIntel.Types.Agent
-
-ukAgency' = Agency 1000 0 0 (buildOrganigram ukAgency)
 
 {- A rank in a hierarchy -}
 type Rank = String
@@ -32,7 +34,11 @@ data Hierarchy = Hierarchy String [Hierarchy]
 data Agency = Agency { _budget :: Int
                      , _realIntel :: Int
                      , _fakeIntel :: Int
-                     , _organigram :: Organigram }
+                     , _organigram :: Organigram
+                     , _potentialAgents :: [Agent]
+                     , _unassigned :: [Agent] }
+
+$(makeLenses ''Agency)
 
 {- The UK agency. Will probably be moved to some config file. -}
 ukAgency :: Hierarchy
@@ -105,3 +111,7 @@ getAvailableRanks = unfoldTree stopIfNoBoss
           stopIfNoBoss (Node (r, Just ag) xs) = ((r, Just ag), xs)
           stopIfNoBoss (Node (r, Nothing) _)  = ((r, Nothing), [])
 
+addAgent :: Agent -> Agency -> Agency
+addAgent a = over unassigned ((:) a) 
+
+ukAgency' p = Agency 1000 0 0 (buildOrganigram ukAgency) p [] -- temporary

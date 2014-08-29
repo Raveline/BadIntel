@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {- A simple random name generator for BadIntel.
 Its main purpose is to produce random, identifiable names for the agents.
 TODO : Extend the list of names.
@@ -21,11 +22,13 @@ where
 
 import Control.Monad.Random
 import System.Random.Shuffle
+import Control.Lens
 
 import BadIntel.Types.Common
 
 data NameCollection = NameCollection { _female :: [String]
                                      , _male :: [String] }
+$(makeLenses ''NameCollection)
 
 ukMFirstNames :: [String]
 ukMFirstNames = ["John", "William", "Edward", "Philip", "Frederick", "Stanley"

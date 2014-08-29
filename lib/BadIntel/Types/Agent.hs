@@ -2,6 +2,7 @@ module BadIntel.Types.Agent
 ( Agent (..)
  ,Name
  ,Skill
+ ,averageLevel
  ,showSkill
  ,describe )
 where
@@ -27,6 +28,10 @@ data Agent = Agent { _name          :: Name
 instance Show Agent where
     show = _name
 
+{- Compute the average of this agent skills -}
+averageLevel :: Agent -> Skill
+averageLevel a = sum [f a | f <- skillExtractions] `div` 6
+
 {- Give a wordly description from a skill level -}
 showSkill :: Skill -> String
 showSkill skill
@@ -50,11 +55,9 @@ skillExtractions = [_collecting, _analyzing, _fighting
 
 {-- Return a multiline descriptionf of an agent. --}
 describe :: Agent -> [String]
-describe a = name:salary:skillStrings
+describe a = name:skillStrings
     where name = "Agent " ++ _name a ++ ":"
           skillLevels = [f a | f <- skillExtractions]
           skillMarks = map showSkill skillLevels
           skillStrings = zipWith (\lvl desc -> lvl ++ " at " ++ desc)
                          skillMarks skillDescriptions
-          salary = "This agent is payed " ++ show (_salary a) ++ " monthly."
-
