@@ -1,22 +1,30 @@
 module BadIntel.Console.Menu
 (enterMenu
-,enterMenu')
+,enterMenu'
+,yesNo)
 where
 
-import System.Console.Haskeline
+import Control.Monad
 import Data.Char
+import System.Console.Haskeline
 import qualified Data.Map as Map
 
 enterMenu :: [String] -> InputT IO Int
 enterMenu c = do displayMenu c
+                 input <- getInputChar "> "
                  let max = length c
-                 pickNumber 1 max
+                 let choice = join . fmap (pickNumber 0 max) $ input
+                 case choice of
+                    Just x -> return x
+                    Nothing -> enterMenu c
 
 enterMenu' :: [String] -> [a -> InputT IO ()] -> a -> InputT IO ()
 enterMenu' m fs o = do c <- enterMenu m
-                       case Map.lookup c (toMenuIndex fs) of
-                            Nothing -> error "Menu does not contain this index."
-                            Just f -> f o
+                       if c == 0 then return ()
+                                 else case Map.lookup c (toMenuIndex fs) of
+                                    Nothing -> error "Menu does not contain this index."
+                                    Just f -> f o
+                                              >> enterMenu' m fs o
 
 displayMenu :: [String] -> InputT IO ()
 displayMenu = mapM_ outputStrLn . toMenu
@@ -28,18 +36,21 @@ toMenu = map (uncurry concatNums) . zip [1..]
 toMenuIndex :: [a] -> Map.Map Int a
 toMenuIndex = Map.fromList . zip [1..] 
 
-pickNumber :: Int -> Int -> InputT IO Int
-pickNumber min max = do input <- getInputChar "> "
-                        case input of
-                            Nothing -> pickNumber min max
-                            Just x -> case validOrLoop x of
-                                Nothing -> pickNumber min max
-                                Just x' -> return x'
-    where 
-           validOrLoop x
-            | isDigit x = inMargin . digitToInt $ x
+pickNumber :: Int -> Int -> Char -> Maybe Int
+pickNumber min max c = do c' <- tryToInt c
+                          inMargin c'
+    where
+          tryToInt x
+            | isDigit x = Just . digitToInt $ x
             | otherwise = Nothing
-           inMargin x
+          inMargin x
             | x >= min && x <= max = Just x
             | otherwise = Nothing
 
+yesNo :: String -> (InputT IO ()) -> InputT IO ()
+yesNo s f = do outputStrLn s
+               c <- getInputChar "> "
+               case c of
+                 Just x -> if x == 'y' then f
+                                       else return ()
+                 Nothing -> yesNo s f

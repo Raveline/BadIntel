@@ -1,9 +1,11 @@
+import Control.Lens
 import Control.Monad.State
 import System.Random
 import System.Console.Haskeline
 import Data.Char
 
 import BadIntel.BadIntel
+import BadIntel.Game.Mechanism
 import BadIntel.Config.Config
 import BadIntel.Types.Common
 import BadIntel.Types.Agent
@@ -27,8 +29,9 @@ buildConfig = do nUk <- getNames Uk
                  return $ Config nUk nRu
 
 buildGame :: Config -> IO BadIntel
-buildGame conf = do pool <- runStateT (buildPool 20 Uk) conf
-                    return $ Game ukAgency' ukAgency' (fst pool)
+buildGame conf = do poolState <- runStateT (buildPool 20 Uk) $ conf
+                    let pool = fst poolState
+                    return $ Game (ukAgency' pool) (ukAgency' pool)
 
 menu :: [String]
 menu = ["See the agency organigram."
@@ -45,9 +48,22 @@ menuFunctions = [agency_org
 agency_org = mapM_ outputStrLn . getAgencyLineUp . _organigram . _ukAgency
 menu_recruitement :: BadIntel -> InputT IO ()
 menu_recruitement g = do let pool = currentRecruitementPool g
-                         c <- enterMenu . map _name $ pool
-                         mapM_ outputStrLn $ describe (pool !! (c-1))
-                         menu_recruitement g
+                         c <- enterMenu . map agentLine $ pool
+                         if c == 0 then return ()
+                                   else displayAgent (currentRecruitementPool g !! c)
+    where 
+          agentLine a = _name a ++ " (" ++ showSkill (averageLevel a) ++ ")"
+          displayAgent a = mapM_ outputStrLn (describe a)
+                           >> recruitOrNot g a
+                           >> menu_recruitement g
+          recruitOrNot :: BadIntel -> Agent -> InputT IO ()
+          recruitOrNot g a = yesNo "Do you want to recruit this potential agent (y/N) ?" (recruitment a g)
+
+recruitment :: Agent -> BadIntel -> InputT IO ()
+recruitment a = return . fst . runState (process (recruit a)) 
 
 menu_management = undefined
 end_turn = undefined
+
+currentRecruitementPool :: BadIntel -> [Agent]
+currentRecruitementPool = take 5 . view (ukAgency . potentialAgents)
