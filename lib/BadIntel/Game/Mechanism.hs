@@ -9,6 +9,7 @@ import Control.Monad.State
 import BadIntel.BadIntel
 import BadIntel.Types.Agent
 import BadIntel.Types.Agency
+import BadIntel.Lens.Tree
 
 type Mission = String -- temporary
 
@@ -42,5 +43,10 @@ process' (Pure r) = return r
 process' (Free (Recruit a n)) = do (ukAgency . unassigned) %= ((:) a)
                                    (ukAgency . potentialAgents) %= (delete a)
                                    process n
-process' (Free (Assign s a n)) = undefined
+process' (Free (Assign s a n)) 
+    = do org <- use (ukAgency . organigram)
+         let lens = findLens (s, Nothing) org
+         ukAgency.organigram.lens .= (s, Just a) -- Put agent in the tree
+         (ukAgency.unassigned) %= (delete a)     -- Remove from unassigned pool
+         process n
 process' (Free (Order m a n)) = undefined

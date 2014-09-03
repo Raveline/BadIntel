@@ -116,3 +116,4 @@ addAgent :: Agent -> Agency -> Agency
 addAgent a = over unassigned ((:) a) 
 
 ukAgency' p = Agency 1000 0 0 (buildOrganigram ukAgency) p [] -- temporary
+

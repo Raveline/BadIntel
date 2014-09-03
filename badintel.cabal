@@ -27,6 +27,7 @@ library
                      ,BadIntel.BadIntel
                      ,BadIntel.Console.Display
                      ,BadIntel.Types.Common
+                     ,BadIntel.Lens.Tree
   build-depends:     base >= 4.7 && < 4.8
                      ,containers
                      ,MonadRandom
