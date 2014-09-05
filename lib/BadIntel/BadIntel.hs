@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module BadIntel.BadIntel
 ( BadIntel (..)
-, ukAgency ) 
+, ukAgency
+, ruAgency )
 where
 
 import Data.List

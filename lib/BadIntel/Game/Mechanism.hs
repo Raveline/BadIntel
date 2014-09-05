@@ -6,10 +6,11 @@ import Control.Lens
 import Control.Monad.Trans.Free
 import Control.Monad.State
 
-import BadIntel.BadIntel
+import BadIntel.Lens.Tree
+import BadIntel.Game.Update
 import BadIntel.Types.Agent
 import BadIntel.Types.Agency
-import BadIntel.Lens.Tree
+import BadIntel.BadIntel
 
 type Mission = String -- temporary
 
@@ -17,11 +18,13 @@ data BadIntelActionF n =
     Recruit Agent n
     | Assign String Agent n
     | Order Mission Agent n
+    | EndTurn n
 
 instance Functor BadIntelActionF where
     fmap f (Recruit a n) = Recruit a (f n)
     fmap f (Assign s a n) = Assign s a (f n)
     fmap f (Order m a n) = Order m a (f n)
+    fmap f (EndTurn n) = EndTurn (f n)
 
 type BadIntelAction = FreeF BadIntelActionF
 type BadIntelActionT = FreeT BadIntelActionF 
@@ -50,3 +53,6 @@ process' (Free (Assign s a n))
          (ukAgency.unassigned) %= (delete a)     -- Remove from unassigned pool
          process n
 process' (Free (Order m a n)) = undefined
+process' (Free (EndTurn n)) = do ukAgency %= updateAgency
+                                 ruAgency %= updateAgency
+                                 process n

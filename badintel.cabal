@@ -22,6 +22,7 @@ library
                      ,BadIntel.Types.Agency
                      ,BadIntel.Config.Config
                      ,BadIntel.Game.Mechanism
+                     ,BadIntel.Game.Update
                      ,BadIntel.Random.Names
                      ,BadIntel.Random.AgentsPool
                      ,BadIntel.BadIntel
