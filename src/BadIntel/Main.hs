@@ -1,4 +1,5 @@
-import Control.Lens
+import Data.Tree
+import Control.Lens hiding (assign)
 import Control.Monad.State
 import System.Random
 import System.Console.Haskeline
@@ -37,13 +38,15 @@ buildGame conf = do poolState <- runStateT (buildPool 20 Uk) $ conf
 menu :: [String]
 menu = ["See the agency organigram."
        ,"Recruit agent."
-       ,"Manage agents."
+       ,"Manage unassigned agents."
+       ,"Manage assigned agents."
        ,"End turn."]
 
 menuFunctions :: [BadIntel -> InputT IO BadIntel]
 menuFunctions = [agency_org
                 ,menu_recruitement
-                ,menu_management
+                ,menu_management_un
+                ,menu_management_as
                 ,end_turn]
 
 agency_org :: BadIntel -> InputT IO BadIntel
@@ -56,7 +59,6 @@ menu_recruitement g = do let pool = currentRecruitementPool g
                          if c == 0 then return g
                                    else displayAgent (currentRecruitementPool g !! (c-1))
     where 
-          agentLine a = _name a ++ " (" ++ showSkill (averageLevel a) ++ ")"
           displayAgent :: Agent -> InputT IO BadIntel
           displayAgent a = mapM_ outputStrLn (describe a)
                            >> recruitOrNot g a
@@ -67,8 +69,31 @@ menu_recruitement g = do let pool = currentRecruitementPool g
 recruitment :: Agent -> BadIntel -> InputT IO BadIntel
 recruitment a = return . snd . runState (process (recruit a)) 
 
-menu_management = undefined
+menu_management_as :: BadIntel -> InputT IO BadIntel
+menu_management_as = undefined
+
+menu_management_un :: BadIntel -> InputT IO BadIntel
+menu_management_un g = do let allAgents = g^.(ukAgency.unassigned)
+                          c <- enterMenu . map agentLine $ allAgents
+                          if c == 0 then return g
+                                    else manage_one (allAgents !! (c-1)) g
 end_turn = undefined
+
+manage_one :: Agent -> BadIntel -> InputT IO BadIntel
+manage_one a g = enterMenu' manage_one_choices [set_salary a, assign_to a] g
+manage_one_choices = ["Set salary"
+                     ,"Assign to a post"]
+manage_one_func = [set_salary
+                  ,assign_to]
+set_salary a g = undefined
+
+assign_to :: Agent -> BadIntel -> InputT IO BadIntel
+assign_to a g = do let available = getAvailableRanks (_organigram . _ukAgency $ g)
+                   c <- enterMenu (getAgencyLineUp available)
+                   let rank = fst $ (flatten available) !! (c-1)
+                   return $ snd . runState (process (assign rank a)) $ g
 
 currentRecruitementPool :: BadIntel -> [Agent]
 currentRecruitementPool = take 5 . view (ukAgency . potentialAgents)
+
+agentLine a = _name a ++ " (" ++ showSkill (averageLevel a) ++ ")"
