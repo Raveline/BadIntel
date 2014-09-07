@@ -6,38 +6,34 @@ module BadIntel.Lens.Tree
 where
 
 import Control.Lens
+import Control.Monad
 import Data.Tree
 import Data.Tree.Lens
 import Data.Maybe
 import Data.List (findIndex)
 
--- findLens :: (Eq a) => a -> Tree a -> ((Tree a -> Identity (Tree a)) -> Tree a -> Identity (Tree a))
 findLens a t = readPath . findPath a $ t
 
 {- Find the indices of each node till a given value
  - is found. If no value is found, there should be a
  - simple [Nothing]. If the value is in the first
  - visited node, result will be [] -}
-findPath :: (Eq a) => a -> Tree a -> [Maybe Int]
+findPath :: (Eq a) => a -> Tree a -> Maybe [Int]
 findPath s (Node n xs)
-    | s == n = []
-    | otherwise = case findIndex (tcontains s) xs of
-        Nothing -> [Nothing]
-        Just x -> (Just x):(nextPath xs x)
+    | s == n = Just []
+    | otherwise = do x <- findIndex(tcontains s) xs
+                     ys <- xs^?ix x >>= findPath s
+                     return (x:ys)
     where
         tcontains s (Node n xs)
             | s == n = True
-            | otherwise = or . map (tcontains s) $ xs
-        nextPath xs' x' = case xs'^?(ix x') of
-                            Nothing -> [Nothing]
-                            Just n -> findPath s n
+            | otherwise = any (tcontains s) xs
 
--- readPath :: [Maybe Int] -> ((Tree a -> Identity (Tree a)) -> Tree a -> Identity (Tree a))
-readPath [] = root
-readPath [Nothing] = error "Value does not exist."
-readPath xs = toBranchIxes . root
+readPath Nothing = error "Value does not exist."
+readPath (Just []) = root
+readPath (Just xs) = toBranchIxes . root
     where toBranchIxes :: (Tree a -> Identity (Tree a)) -> Tree a -> Identity (Tree a)
-          toBranchIxes = compose $ map ((branches .) . ix) . catMaybes $ xs
+          toBranchIxes = compose $ map ((branches .) . ix) xs
           
--- compose :: [a -> a] -> (a -> a)
-compose fs = foldl (flip (.)) id fs 
+compose = foldl (flip (.)) id
+

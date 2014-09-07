@@ -24,9 +24,9 @@ countryToNameCollection Russia = _ruNameCollection
 
 pickName :: (Monad m) => Country -> Gender -> MonadConfig m String
 pickName c g = do conf <- get
-                  collection <- return $ countryToNameCollection c conf
-                  list <- return $ listFromGender g collection
-                  list' <- return $ tail list
-                  collection' <- return $ rebuildCollection g list' collection
+                  let collection = countryToNameCollection c conf
+                  let list = listFromGender g collection
+                  let list' = tail list
+                  let collection' = rebuildCollection g list' collection
                   put $ rebuildConfig c collection' conf
                   return $ head list

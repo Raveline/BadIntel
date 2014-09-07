@@ -31,8 +31,7 @@ buildConfig = do nUk <- getNames Uk
                  return $ Config nUk nRu
 
 buildGame :: Config -> IO BadIntel
-buildGame conf = do poolState <- runStateT (buildPool 20 Uk) $ conf
-                    let pool = fst poolState
+buildGame conf = do pool <- evalStateT (buildPool 20 Uk) conf
                     return $ Game (ukAgency' pool) (ukAgency' pool)
 
 menu :: [String]
@@ -43,55 +42,55 @@ menu = ["See the agency organigram."
        ,"End turn."]
 
 menuFunctions :: [BadIntel -> InputT IO BadIntel]
-menuFunctions = [agency_org
-                ,menu_recruitement
-                ,menu_management_un
-                ,menu_management_as
-                ,end_turn]
+menuFunctions = [agencyOrg
+                ,menuRecruitment
+                ,menuManagementUn
+                ,menuManagementAs
+                ,endTurn]
 
-agency_org :: BadIntel -> InputT IO BadIntel
-agency_org g = do mapM_ outputStrLn . getAgencyLineUp $ (g^.(ukAgency . organigram))
-                  return g
+agencyOrg :: BadIntel -> InputT IO BadIntel
+agencyOrg g = do mapM_ outputStrLn . getAgencyLineUp $ (g^.(ukAgency . organigram))
+                 return g
 
-menu_recruitement :: BadIntel -> InputT IO BadIntel
-menu_recruitement g = do let pool = currentRecruitementPool g
-                         c <- enterMenu . map agentLine $ pool
-                         if c == 0 then return g
-                                   else displayAgent (currentRecruitementPool g !! (c-1))
+menuRecruitment :: BadIntel -> InputT IO BadIntel
+menuRecruitment g = do let pool = currentRecruitementPool g
+                       c <- enterMenu . map agentLine $ pool
+                       if c == 0 then return g
+                                 else displayAgent (currentRecruitementPool g !! (c-1))
     where 
           displayAgent :: Agent -> InputT IO BadIntel
           displayAgent a = mapM_ outputStrLn (describe a)
                            >> recruitOrNot g a
-                           >>= menu_recruitement
+                           >>= menuRecruitment
           recruitOrNot :: BadIntel -> Agent -> InputT IO BadIntel
           recruitOrNot g a = yesNo "Do you want to recruit this potential agent (y/N) ?" (recruitment a) g
 
 recruitment :: Agent -> BadIntel -> InputT IO BadIntel
-recruitment a = return . snd . runState (process (recruit a)) 
+recruitment a = return . execState (process (recruit a)) 
 
-menu_management_as :: BadIntel -> InputT IO BadIntel
-menu_management_as = undefined
+menuManagementAs :: BadIntel -> InputT IO BadIntel
+menuManagementAs = undefined
 
-menu_management_un :: BadIntel -> InputT IO BadIntel
-menu_management_un g = do let allAgents = g^.(ukAgency.unassigned)
-                          c <- enterMenu . map agentLine $ allAgents
-                          if c == 0 then return g
-                                    else manage_one (allAgents !! (c-1)) g
-end_turn = undefined
+menuManagementUn :: BadIntel -> InputT IO BadIntel
+menuManagementUn g = do let allAgents = g^.(ukAgency.unassigned)
+                        c <- enterMenu . map agentLine $ allAgents
+                        if c == 0 then return g
+                                  else manageOne (allAgents !! (c-1)) g
+endTurn = undefined
 
-manage_one :: Agent -> BadIntel -> InputT IO BadIntel
-manage_one a g = enterMenu' manage_one_choices [set_salary a, assign_to a] g
-manage_one_choices = ["Set salary"
+manageOne :: Agent -> BadIntel -> InputT IO BadIntel
+manageOne a = enterMenu' manageOneChoices [setSalary a, assignTo a]
+manageOneChoices = ["Set salary"
                      ,"Assign to a post"]
-manage_one_func = [set_salary
-                  ,assign_to]
-set_salary a g = undefined
+manageOneFunc = [setSalary
+                  ,assignTo]
+setSalary a g = undefined
 
-assign_to :: Agent -> BadIntel -> InputT IO BadIntel
-assign_to a g = do let available = getAvailableRanks (_organigram . _ukAgency $ g)
-                   c <- enterMenu (getAgencyLineUp available)
-                   let rank = fst $ (flatten available) !! (c-1)
-                   return $ snd . runState (process (assign rank a)) $ g
+assignTo :: Agent -> BadIntel -> InputT IO BadIntel
+assignTo a g = do let available = getAvailableRanks (_organigram . _ukAgency $ g)
+                  c <- enterMenu (getAgencyLineUp available)
+                  let rank = fst $ flatten available !! (c-1)
+                  return $ execState (process (assign rank a)) g
 
 currentRecruitementPool :: BadIntel -> [Agent]
 currentRecruitementPool = take 5 . view (ukAgency . potentialAgents)

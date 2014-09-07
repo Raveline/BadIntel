@@ -43,14 +43,14 @@ process a = runFreeT a >>= process'
 
 process' :: BadIntelAction n (BadIntelActionT (State BadIntel) n) -> State BadIntel n
 process' (Pure r) = return r
-process' (Free (Recruit a n)) = do (ukAgency . unassigned) %= ((:) a)
-                                   (ukAgency . potentialAgents) %= (delete a)
+process' (Free (Recruit a n)) = do (ukAgency . unassigned) %= (:) a
+                                   (ukAgency . potentialAgents) %= delete a
                                    process n
 process' (Free (Assign s a n)) 
     = do org <- use (ukAgency . organigram)
          let lens = findLens (s, Nothing) org
          ukAgency.organigram.lens .= (s, Just a) -- Put agent in the tree
-         (ukAgency.unassigned) %= (delete a)     -- Remove from unassigned pool
+         (ukAgency.unassigned) %= delete a     -- Remove from unassigned pool
          process n
 process' (Free (Order m a n)) = undefined
 process' (Free (EndTurn n)) = do ukAgency %= updateAgency

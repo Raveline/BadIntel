@@ -11,10 +11,10 @@ import BadIntel.Types.Common
 import BadIntel.Random.Names
 import BadIntel.Config.Config
 
-default_salary = 100
+defaultSalary = 100
 
 buildAgent :: (MonadRandom m) => Country -> MonadConfig m Agent
-buildAgent c = flipGender >>= pickName c >>= buildAgent' default_salary 
+buildAgent c = flipGender >>= pickName c >>= buildAgent' defaultSalary
     where
         buildAgent' s n = do col <- castSkill
                              a   <- castSkill
@@ -36,4 +36,4 @@ flipGender = do f <- flip'
                         else Male)
 
 buildPool :: (MonadRandom m) => Int -> Country -> MonadConfig m [Agent]
-buildPool n c = sequence $ replicate n (buildAgent c)
+buildPool n c = replicateM n (buildAgent c)

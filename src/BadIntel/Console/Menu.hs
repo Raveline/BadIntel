@@ -30,8 +30,8 @@ displayMenu :: [String] -> InputT IO ()
 displayMenu = mapM_ outputStrLn . toMenu
 
 toMenu :: [String] -> [String]
-toMenu = map (uncurry concatNums) . zip [1..]
-    where concatNums n s = (intToDigit n):". " ++ s
+toMenu = zipWith concatNums [1..]
+    where concatNums n s = intToDigit n:". " ++ s
 
 toMenuIndex :: [a] -> Map.Map Int a
 toMenuIndex = Map.fromList . zip [1..] 
