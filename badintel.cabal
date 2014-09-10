@@ -21,6 +21,7 @@ library
   exposed-modules:   BadIntel.Types.Agent
                      ,BadIntel.Types.Agency
                      ,BadIntel.Config.Config
+                     ,BadIntel.Config.AgencyParser
                      ,BadIntel.Game.Mechanism
                      ,BadIntel.Game.Update
                      ,BadIntel.Random.Names
@@ -35,6 +36,7 @@ library
                      ,random-shuffle
                      ,free
                      ,lens
+                     ,parsec
                      ,mtl
 
 executable badintel
