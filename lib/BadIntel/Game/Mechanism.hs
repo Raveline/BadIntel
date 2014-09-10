@@ -16,7 +16,7 @@ type Mission = String -- temporary
 
 data BadIntelActionF n = 
     Recruit Agent n
-    | Assign String Agent n
+    | Assign Rank Agent n
     | Order Mission Agent n
     | EndTurn n
 
@@ -32,8 +32,8 @@ type BadIntelActionT = FreeT BadIntelActionF
 recruit :: (Monad m) => Agent -> BadIntelActionT m ()
 recruit a = liftF $ Recruit a ()
 
-assign :: (Monad m) => String -> Agent -> BadIntelActionT m ()
-assign s a = liftF $ Assign s a ()
+assign :: (Monad m) => Rank -> Agent -> BadIntelActionT m ()
+assign r a = liftF $ Assign r a ()
 
 order :: (Monad m) => String -> Agent -> BadIntelActionT m ()
 order m a = liftF $ Order m a ()

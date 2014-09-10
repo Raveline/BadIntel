@@ -14,6 +14,6 @@ getAgencyLineUp = showPosition 0
           showPosition :: Int -> Organigram -> [String]
           showPosition tabs (Node p xs) = showOne tabs p : concatMap (showPosition (succ tabs)) xs
           showOne :: Int -> Position -> String
-          showOne tabs (r, a) = putTabs tabs ++ r ++ " : " ++ posToString a
+          showOne tabs (r, a) = putTabs tabs ++ (show r) ++ " : " ++ posToString a
           posToString = maybe "VACANT" show
           putTabs = concat . flip replicate "\t"

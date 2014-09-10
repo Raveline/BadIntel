@@ -1,11 +1,20 @@
+{-# LANGUAGE TemplateHaskell #-}
 module BadIntel.Types.Agent
 ( Agent (..)
  ,Name
  ,Skill
+ ,analyzing
+ ,fighting
+ ,convincing
+ ,hiding
+ ,loyalty
+ ,collecting
  ,averageLevel
  ,showSkill
  ,describe )
 where
+
+import Control.Lens
 
 {- The first name and last name of an agent -}
 type Name = String
@@ -28,6 +37,8 @@ data Agent = Agent { _name          :: Name
 instance Show Agent where
     show = _name
 
+$(makeLenses ''Agent)
+
 {- Compute the average of this agent skills -}
 averageLevel :: Agent -> Skill
 averageLevel a = sum [f a | f <- skillExtractions] `div` 6
@@ -36,9 +47,9 @@ averageLevel a = sum [f a | f <- skillExtractions] `div` 6
 showSkill :: Skill -> String
 showSkill skill
     | skill < 5 = "Pityful"
-    | skill < 8 = "Bad"
+    | skill < 9 = "Bad"
     | skill < 13 = "Average"
-    | skill < 16 = "Good"
+    | skill < 17 = "Good"
     | otherwise = "Excellent"
 
 skillDescriptions :: [String]
