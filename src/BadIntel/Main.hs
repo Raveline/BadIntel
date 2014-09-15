@@ -8,6 +8,7 @@ import Data.Char
 import BadIntel.BadIntel
 import BadIntel.Game.Mechanism
 import BadIntel.Config.Config
+import BadIntel.Config.AgencyParser
 import BadIntel.Types.Common
 import BadIntel.Types.Agent
 import BadIntel.Types.Agency
@@ -32,7 +33,10 @@ buildConfig = do nUk <- getNames Uk
 
 buildGame :: Config -> IO BadIntel
 buildGame conf = do pool <- evalStateT (buildPool 20 Uk) conf
-                    return $ Game (ukAgency' pool) (ukAgency' pool)
+                    agency <- readFile "ukAgency.bic"
+                    ukAgency <- return $ getOrganigram agency
+                    let ukAgency' = buildAgency ukAgency pool
+                    return $ Game ukAgency' ukAgency'
 
 menu :: [String]
 menu = ["See the agency organigram."
