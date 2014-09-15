@@ -17,6 +17,7 @@ parseRank :: GenParser Char st Rank
 parseRank = Rank <$> (manyTill anyChar rankType <* spaces)
                  <*> (rankType <* spaces)
                  <*> option Nothing (Just <$> stringToLens)
+                     <* char '\n'
 
 rankType :: GenParser Char st PositionOutput
 rankType = choice [string "Raw" *> return Raw
