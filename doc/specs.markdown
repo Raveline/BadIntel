@@ -129,6 +129,17 @@ These agents are randomly gifted.
 They stay on the pool during 6 months. After that, they will find employmeent
 elsewhere.
 
+#### 2.1.6. Management
+
+A director may affect the result of his subordinates, for one given skill (see
+below). Bonus or malus are computed according to the director's skill :
+
+* Pityful : -2
+* Bad : -1
+* Average : 0
+* Good : +1
+* Excellent : +2
+
 ### 2.2. The agents
 
 Agents are more or less skilled in various tasks.
@@ -207,4 +218,11 @@ Agent WILL gain loyalty (1 point) if they are given a raise.
 Giving a higher rank to an agent will also raise her/his loyalty (by 1).
 However, demoting agents will also lose (2 points) their loyalty.
 
+###### 2.2.1.9. Naming
 
+Skills are not represented as numbers to the player, but through adjectives.
+* 1-4 : Pityful
+* 5-8 : Bad
+* 9-12 : Average
+* 13-16 : Good
+* 17-20 : Excellent
