@@ -6,6 +6,7 @@ import Control.Lens hiding (assign)
 import Data.Tree.Lens
 import Test.Hspec
 
+import BadIntel.TestData
 import BadIntel.BadIntel
 import BadIntel.Types.Agency
 import BadIntel.Types.Agent hiding (describe)
@@ -29,7 +30,7 @@ apply f = snd . runState (process f)
 gameAfterRecruitingAgent :: BadIntel
 gameAfterRecruitingAgent = (recruit agent1) `apply` testGame 
 
-gameAfterAssigningAgent a = (assign "Director" a) `apply` testGame
+gameAfterAssigningAgent a = (assign directorRank a) `apply` testGame
 
 spec = do
     context "When giving the recruit order" $ do
@@ -42,7 +43,7 @@ spec = do
     context "When assigning an agent to a position" $ do
         it "Gives an open position to an agent." $ do
             ( (gameAfterAssigningAgent agent3) ^.(ukAgency . organigram . root) ) 
-            `shouldBe` ("Director", Just agent3)
+            `shouldBe` (directorRank, Just agent3)
         it "Agent assigned are not in the unassigned list anymore." $ do
             (agent3 `elem` ( (gameAfterAssigningAgent agent3)^.(ukAgency . unassigned) )) 
             `shouldBe` False
