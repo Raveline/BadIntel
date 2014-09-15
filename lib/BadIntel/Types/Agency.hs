@@ -55,6 +55,7 @@ type Organigram = Tree Position
 
 {- A potential agency, used to build the real ones -}
 data Hierarchy = Hierarchy Rank [Hierarchy]
+    deriving (Eq, Show)
 
 data Agency = Agency { _budget :: Int
                      , _rawRealIntel :: Int
