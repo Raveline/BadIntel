@@ -31,6 +31,7 @@ data PositionOutput =
   | DefensiveMissions   -- Ability to protect the motherland
   | Infiltration        -- Ability to recruit and manage mole
   | Countering          -- Ability to detect moles and bad intelligence
+    deriving (Eq, Show)
 
 {- A rank in a hierarchy -}
 data Rank = Rank 

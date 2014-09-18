@@ -25,19 +25,19 @@ ukHierarchy = Hierarchy directorRank
                 [Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []]
-              ,Hierarchy (Rank "Asian director" Raw (Just $ view collecting))
+              ,Hierarchy (Rank "Asia director" Raw (Just $ view collecting))
                 [Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []]
-              ,Hierarchy (Rank "African director" Raw (Just $ view collecting))
+              ,Hierarchy (Rank "Africa director" Raw (Just $ view collecting))
                 [Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []]
-              ,Hierarchy (Rank "South-American director" Raw (Just $ view collecting))
+              ,Hierarchy (Rank "South-America director" Raw (Just $ view collecting))
                 [Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []]
-              ,Hierarchy (Rank "North-American director" Raw (Just $ view collecting))
+              ,Hierarchy (Rank "North-America director" Raw (Just $ view collecting))
                 [Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []
                 ,Hierarchy (Rank "Operative" Raw Nothing) []]

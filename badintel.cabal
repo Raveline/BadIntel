@@ -63,3 +63,4 @@ test-suite Tests
                        ,lens
                        ,badintel
                        ,mtl
+                       ,parsec
